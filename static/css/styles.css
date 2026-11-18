@@ -1,0 +1,19 @@
+body {
+    background-color: #f4f7f6 !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+    border-radius: 12px;
+}
+
+#previewImage {
+    max-height: 220px;
+    object-fit: cover;
+    width: 100%;
+}
+
+.badge {
+    font-size: 0.85rem;
+    padding: 0.4em 0.8em;
+}

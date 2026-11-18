@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Local configuration
+.env
+.env.*
+!.env.example
+
+# Datasets and generated training artifacts
+/dataset/
+/raw_plantvillage_dataset/
+/plant_disease_model.h5
+/plant_disease_model.keras
+/training_metrics.png
+
+# User-uploaded images
+/static/uploads/*
+!/static/uploads/.gitkeep

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Disease Detection System</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-light">
+
+    <!-- Header Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">🌱 Plant Disease Detector</a>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                
+                <!-- Card Container -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h3 class="card-title text-center text-success fw-bold mb-3">AI Leaf Disease Analysis</h3>
+                        <p class="text-muted text-center mb-4">Upload a clear photo of an affected plant leaf to receive instant disease diagnosis and treatment steps.</p>
+
+                        <!-- Upload Form -->
+                        <form id="uploadForm" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="leafImage" class="form-label fw-semibold">Select Leaf Image:</label>
+                                <input class="form-control" type="file" id="leafImage" accept="image/*" required>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
+                                    <span id="btnText">Analyze Image</span>
+                                    <span id="spinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Prediction Results Display (Initially Hidden) -->
+                <div id="resultCard" class="card shadow-sm border-0 mt-4 d-none">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h4 class="fw-bold text-secondary mb-0">Analysis Results</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row align-items-center">
+                            <!-- Uploaded Image Preview -->
+                            <div class="col-md-5 text-center mb-3 mb-md-0">
+                                <img id="previewImage" src="" alt="Uploaded Leaf" class="img-fluid rounded border shadow-sm">
+                            </div>
+                            <!-- Result Details -->
+                            <div class="col-md-7">
+                                <div class="mb-2">
+                                    <span class="badge" id="statusBadge">Status</span>
+                                </div>
+                                <h5 class="fw-bold text-dark mb-1" id="diseaseTitle">--</h5>
+                                <p class="text-muted small">Model Confidence: <span class="fw-bold text-success" id="confidenceScore">0%</span></p>
+                                
+                                <h6 class="fw-bold text-secondary mt-3">Description:</h6>
+                                <p class="text-muted small" id="diseaseDesc">--</p>
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+
+                        <!-- Recommended Actions -->
+                        <div>
+                            <h6 class="fw-bold text-success">Recommended Preventive Measures:</h6>
+                            <ul id="preventionList" class="text-muted small ps-3">
+                                <!-- Dynamic List Items -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Implementation -->
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const leafImageInput = document.getElementById('leafImage');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('spinner');
+        const resultCard = document.getElementById('resultCard');
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const file = leafImageInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Show loading state
+            btnText.textContent = "Processing...";
+            spinner.classList.remove('d-none');
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Update UI components
+                    document.getElementById('previewImage').src = data.image_url;
+                    document.getElementById('diseaseTitle').textContent = data.disease_name;
+                    document.getElementById('confidenceScore').textContent = data.confidence;
+                    document.getElementById('diseaseDesc').textContent = data.description;
+
+                    // Set Status Badge Color
+                    const badge = document.getElementById('statusBadge');
+                    badge.textContent = data.status;
+                    if (data.status === 'Healthy') {
+                        badge.className = 'badge bg-success';
+                    } else {
+                        badge.className = 'badge bg-danger';
+                    }
+
+                    // Populate Prevention Steps
+                    const list = document.getElementById('preventionList');
+                    list.innerHTML = '';
+                    data.prevention.forEach(step => {
+                        const li = document.createElement('li');
+                        li.textContent = step;
+                        list.appendChild(li);
+                    });
+
+                    // Reveal Result Card
+                    resultCard.classList.remove('d-none');
+                } else {
+                    alert(data.error || 'Prediction failed.');
+                }
+            } catch (err) {
+                alert('An error occurred while connecting to the backend server.');
+            } finally {
+                // Reset button state
+                btnText.textContent = "Analyze Image";
+                spinner.classList.add('d-none');
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
