@@ -15,8 +15,6 @@ env/
 # Datasets and generated training artifacts
 /dataset/
 /raw_plantvillage_dataset/
-/plant_disease_model.h5
-/plant_disease_model.keras
 /training_metrics.png
 
 # User-uploaded images
